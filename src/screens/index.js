@@ -10,3 +10,4 @@ export {default as DocumentScreen} from '../screens/DocumentScreen/DocumentScree
 export {default as AppointmentScreen} from '../screens/AppointmentScreen/AppointmentScreen';
 export {default as EmployeeDetails} from '../screens/EmployeeDetails/EmployeeDetails';
 export {default as ShowService} from '../screens/ShowServices/Showservice'
+export {default as AddEmployee } from '../screens//AddEmployee/AddEmployee'

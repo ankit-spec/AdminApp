@@ -1,20 +1,19 @@
 import React from 'react';
-import {View, Text, StyleSheet,Image,TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet,Image} from 'react-native';
 import {windowWidth} from '../../utils/measurement';
 import ThreeLinesIcon from '../../assets/icons/threeLine.svg';
 import Back from '../../assets/icons/Back.svg'
-
-import {moderateScale, verticalScale,scale} from '../../styles/responsiveStyles';
+import {moderateScale, scale, verticalScale} from '../../styles/responsiveStyles';
 import {typography} from '../../styles/typography';
 import {colors} from '../../styles/colors';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-function HomeHeader(props) {
+import { TouchableOpacity } from 'react-native-gesture-handler';
+function Header2(props) {
   const logoImage=useSelector(state=>state.authEmployee.bussinessImage)
-  const bussinessName=useSelector(state=>state.authEmployee.bussinessname)
-
+const bussinessName=useSelector(state=>state.authEmployee.bussinessname)
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={styles.main}>
@@ -26,22 +25,21 @@ function HomeHeader(props) {
         source={{uri:`http://18.159.82.242/v1/uploads/${logoImage}`}}
         /> */}
         <Text style={styles.Text}>{bussinessName}</Text>
-        {/* <View style={{marginRight: moderateScale(12)}}>
-          <Text style={{color: 'white'}}>ihihih</Text>
-        </View> */}
-           <TouchableOpacity 
+        <TouchableOpacity 
+        hitSlop={{top: 20, bottom: 20, left: 50, right: 50}}
         onPress={props.onPressback}
         style={{marginRight: moderateScale(12)}}>
-        {/* <Back/> */}
-        <Icon
+           <Icon
         name='arrow-back-outline'
         size={25}
         />
         </TouchableOpacity>
       </View>
-      {/* <View style={styles.myAppointmentsHeader}>
-        <Text style={styles.myAppointmentsText}>{props.title}</Text>
-      </View> */}
+    {/* <View style={styles.myAppointmentsHeader}>
+      <Text style={styles.myAppointmentsText}>
+        {props.title}
+      </Text>
+      </View>  */}
     </SafeAreaView>
   );
 }
@@ -63,15 +61,15 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexSansHebrew-Bold',
   },
   myAppointmentsHeader: {
-    height: 110,
+    height: 60,
     width: windowWidth,
     backgroundColor: colors.THEME,
     borderBottomRightRadius: 25,
     borderBottomLeftRadius: 25,
-    marginTop: '-15%',
+    marginTop: '0%',
   },
   myAppointmentsText: {
-    marginTop: 70,
+    marginTop: 20,
     color: '#ffffff',
     alignSelf: 'center',
     // fontWeight:'bold',
@@ -88,4 +86,4 @@ const styles = StyleSheet.create({
     color: colors.BLACK,
   },
 });
-export default HomeHeader;
+export default Header2;

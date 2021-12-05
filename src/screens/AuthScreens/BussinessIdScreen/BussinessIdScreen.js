@@ -17,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Share from 'react-native-share';
 import {GET_REGISTER_DATA} from '../../../config/config';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-const BussinessIdScreen = () => {
+const BussinessIdScreen = ({navigation}) => {
   const [Data, setData] = useState({
     Company: '',
   });
@@ -34,6 +34,7 @@ const BussinessIdScreen = () => {
       .then(response => response.json())
       .then(responseJson => {
         setData({Company: responseJson.data.businessId});
+       
         console.log(Data.Company, 'lllll');
         //   setRegisterData({bussinessdata:responseJson.data.businessId})
         // console.log(respon,'<<<<=====')
@@ -174,7 +175,11 @@ const BussinessIdScreen = () => {
         </Text>
       </View>
       <View style={{height: verticalScale(100)}} />
-      <Button text="סיום ההרשמה" />
+      <Button
+      onPress={()=>{
+        navigation.navigate('AppTabNavigator')
+      }}
+      text="סיום ההרשמה" />
     </SafeAreaView>
   );
 };

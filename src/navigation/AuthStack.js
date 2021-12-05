@@ -6,7 +6,8 @@ import {
   BussinessIdScreen,
   DashboardScreen,
   AddSerivce,
-  ShowEmployees
+  ShowEmployees,
+  ProfileScreen
 } from '../screens';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeHeader from '../components/Header/HomeHeader';
@@ -31,21 +32,16 @@ function DashboardNavigator() {
 
 function AuthNavigator() {
   return (
-    <MainStack.Navigator  >
-      {/* <MainStack.Screen
+    <>
+     <MainStack.Screen
     
-      name="PhoneSingin" component={PhoneSigninScreen} />  */}
-      {/* \<MainStack.Screen name="OtpScreen" component={OtpScreen} />
-      <MainStack.Screen name="Signup" component={RegistrationScreen} />
-      <MainStack.Screen name="BussinessId" component={BussinessIdScreen} /> */}
-       <MainStack.Screen name="Dashboard" component={AppTabNavigator} 
-      options={{header: () => <HomeHeader
-        title='הוספת שירות חדש ליומן'
-        />, headerTransparent: true}}
+      name="PhoneSingin" component={PhoneSigninScreen} /> 
+      <MainStack.Screen name="OtpScreen" component={OtpScreen} /> 
+     <MainStack.Screen name="Signup" component={RegistrationScreen} />
+      <MainStack.Screen name="BussinessId" component={BussinessIdScreen} />  
+       </>
 
-      /> 
-
-    </MainStack.Navigator>
+ 
   );
 }
 

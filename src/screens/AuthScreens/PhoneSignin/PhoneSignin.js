@@ -10,7 +10,7 @@ import * as authActions from '../../../redux/actions/auth'
 import {moderateScale, verticalScale,scale} from '../../../styles/responsiveStyles';
 import {typography} from '../../../styles/typography';
 import {showError} from '../../../utils/helperFunction';
-
+import { RFValue } from 'react-native-responsive-fontsize';
 import {validatePhoneNumber} from '../../../utils/validations';
 const PhoneSigninScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -52,7 +52,8 @@ const PhoneSigninScreen = ({navigation}) => {
       </View>
       <View style={styles.cover} />
       <Input
-        style={{textAlign: 'center'}}
+                style={{textAlign: 'center',fontSize:RFValue(16),fontFamily:'IBMPlexSansHebrew-Regular'}}
+
         value={phone}
         onChangeText={text => setphone(text)}
         placeholder="טלפון נייד"

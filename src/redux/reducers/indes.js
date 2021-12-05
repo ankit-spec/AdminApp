@@ -1,9 +1,10 @@
 import {combineReducers} from 'redux';
 import auth from './auth';
 import types from '../types';
+import authEmployee from './authEmployee';
 const appReducer = combineReducers({
   auth,
- 
+ authEmployee
  
 });
 

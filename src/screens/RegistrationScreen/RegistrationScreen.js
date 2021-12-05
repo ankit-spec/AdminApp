@@ -16,30 +16,33 @@ import {colors} from '../../styles/colors';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {androidCameraPermission} from '../../../permissions';
 import ImagePicker from 'react-native-image-crop-picker';
-import HighFive from '../../assets/icons/highfive.svg';
-import axios from 'axios';
 import {
   moderateScale,
   verticalScale,
   scale,
 } from '../../styles/responsiveStyles';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {typography} from '../../styles/typography';
 import {showError, showSuccess} from '../../utils/helperFunction';
-
 import DatePicker from 'react-native-datepicker';
 import moment from 'moment';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {RFValue} from 'react-native-responsive-fontsize';
-import ShareIcon from '../../assets/icons/shareicon.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {GET_REGISTER_DATA, REGISTER_URL} from '../../config/config';
+import {REGISTER_URL} from '../../config/config';
 import {emailCheck} from '../../utils/validations';
+import AddPostView from '../../components/AddPostView';
+import {useDispatch} from 'react-redux';
+import * as authAction from '../../redux/actions/auth';
+import { KeyboardAwareFlatList,KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+
 androidCameraPermission;
 
 const RegistrationScreen = ({navigation}) => {
   const idd = useSelector(state => state.auth.id);
-  console.log(idd, 'iiddd');
+  const code=useSelector(state=>state.authEmployee)
+  console.log(code,'code')
+  // console.log(idd, 'iiddd');
   const [name, setfullName] = useState('');
   const [dateOfBirth, setdob] = useState('');
   const [email, setemail] = useState('');
@@ -50,16 +53,20 @@ const RegistrationScreen = ({navigation}) => {
   const [bussinessName, setBussinessName] = useState('');
   const [bussinessPhone, setBussinessPhone] = useState('');
   const [bussinessAddress, setBussinessAddress] = useState('');
+  const [instaname, setinstaname] = useState('');
   const [image, setImage] = useState('');
+  const [image1, setimage1] = useState('');
+  const [cover, setCover] = useState('');
+  const [cover1, setcover1] = useState('');
+  const [imageList, setImageList] = useState([]);
+  const [grpImages, setgrpImages] = useState([]);
+  const dispatch = useDispatch();
   const firstViewHandler = () => {
     setShoeFirstView(true);
     setshowSecondView(false);
     setshowThirdView(false);
     setShowfourthView(false);
   };
-
-  const dispatch = useDispatch();
- 
 
   const secondViewHandler = () => {
     setShoeFirstView(false);
@@ -77,6 +84,18 @@ const RegistrationScreen = ({navigation}) => {
   const [year, month, day] = input.split('-');
   // console.log(`${day}/${month}/${year}`);
   let datereversed = `${day}/${month}/${year}`;
+
+
+useEffect(() => {
+  
+  if(code.code=='Success'){
+   const loginkey =  AsyncStorage.setItem( 'loginkey',JSON.stringify(true));
+
+    dispatch(authAction.removeData(code))
+    navigation.navigate('BussinessId');
+
+  }
+}, [code])
 
   const isValidData1 = async () => {
     if (name == '') {
@@ -97,6 +116,7 @@ const RegistrationScreen = ({navigation}) => {
         return;
       }
     }
+  
 
     setShoeFirstView(false);
     setshowSecondView(true);
@@ -145,6 +165,83 @@ const RegistrationScreen = ({navigation}) => {
       ]);
     }
   };
+  const onSelectImage1 = async () => {
+    const permissionStatus = await androidCameraPermission();
+    if (permissionStatus || Platform.OS == 'ios') {
+      Alert.alert('Profile Picture', 'Choose an option', [
+        {text: 'Gallery', onPress: onGallery1},
+        {text: 'Cancel', onPress: () => {}},
+      ]);
+    }
+  };
+  const onSelectImage2 = async () => {
+    const permissionStatus = await androidCameraPermission();
+    if (permissionStatus || Platform.OS == 'ios') {
+      Alert.alert('Profile Picture', 'Choose an option', [
+        {text: 'Gallery', onPress: openImagePicker},
+        {text: 'Cancel', onPress: () => {}},
+      ]);
+    }
+  };
+
+  const openImagePicker = () => {
+    let imageListt = [];
+    let apiList = [];
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      multiple: true,
+      maxFiles: 5,
+      includeBase64: true,
+      disableCropperColorSetters:true,
+      avoidEmptySpaceAroundImage:true,
+      mediaType:'photo',
+      compressImageQuality:1	,
+      freeStyleCropEnabled:true,
+      showCropFrame:false,
+      compressImageQuality:0.8	
+    })
+      .then(response => {
+        // console.log('Response', response);
+        response.map(image => {
+          imageListt.push({
+            filename: image.filename,
+            path: image.path,
+            // data: image.data,
+          });
+        });
+        response.map(imagee =>
+          apiList.push(`data:image/png;base64,${imagee.data}`),
+        );
+        setgrpImages(apiList);
+        setImageList(imageListt);
+      })
+      .catch(e => console.log('Error'));
+  };
+  const onGallery1 = () => {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+      includeBase64: true,
+      disableCropperColorSetters:true,
+      avoidEmptySpaceAroundImage:true,
+      mediaType:'photo',
+      compressImageQuality:1	,
+      freeStyleCropEnabled:true,
+      showCropFrame:false,
+      compressImageQuality:0.8	
+
+    }).then(imageee => {
+      // setCover(imageee.path);
+      // setcover1(imageee.data);
+      //  console.log(imageee.data, 'data<<<====');
+      setCover(imageee.path);
+      setcover1(imageee.data);
+      console.log(cover1, '.....');
+    });
+  };
   const takePhotoFromCamera = () => {
     ImagePicker.openCamera({
       compressImageMaxWidth: 300,
@@ -163,46 +260,72 @@ const RegistrationScreen = ({navigation}) => {
       height: 400,
       cropping: true,
       includeBase64: true,
-    }).then(image => {
+      disableCropperColorSetters:true,
+      avoidEmptySpaceAroundImage:true,
+      mediaType:'photo',
+      compressImageQuality:1	,
+      freeStyleCropEnabled:true,
+      showCropFrame:false,
+      compressImageQuality:0.8	
+
+    }).then(imagee => {
+      /// console.log(imagee.data,'bvbvb')
+
       //  console.log('selected Image', image);
-      setImage(image.path);
+      setImage(imagee.path);
+      setimage1(imagee.data);
+      console.log(image1, 'data<<<====');
+      // console.log(image.data,'jbujbub')
       // imageUpload(image.data);
     });
   };
 
-  const imageUpload = async data => {
-    // console.log(data, 'dats');
+  const imageUpload = (data, data1) => {
+  
+    try {
+      dispatch(authAction.resgisterEmployee(name,datereversed,email,bussinessName,bussinessPhone,bussinessAddress,instaname,idd,image1,cover1,grpImages));
+     
 
-    const value = await AsyncStorage.getItem('@storage_Key');
-    const requestOptions = {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json', Authorization: value},
-      body: JSON.stringify({
-        name: name,
-        dateOfBirth: datereversed,
-        email: email,
-        business_name: bussinessName,
-        business_phone: bussinessPhone,
-        address: bussinessAddress,
-        id: idd,
-      }),
-      logo: `data:image/png;base64${data}`,
-    };
+  } catch (error) {
+      showError('Something went wrong')
+    
 
-    fetch(REGISTER_URL, requestOptions)
-      .then(response => response.json())
-      .then(responseJson => {
-      //  console.log(responseJson, ';;;;');
-      });
-      navigation.navigate('BussinessId')
+  }
+   
 
-    // setShoeFirstView(false);
-    // setshowSecondView(false);
-    // setshowThirdView(false);
-    // setShowfourthView(true);
+ //  dispatch(authAction.resgisterEmployee(name,datereversed,email,bussinessName,bussinessPhone,bussinessAddress,instaname,idd,image1,cover1,grpImages))
+    // if(code==200){
+    //   navigation.navigate('BussinessId');
+
+    // }else{
+    //   showError('Something went wrong!')
+    // }
+//     const value = await AsyncStorage.getItem('@storage_Key');
+// console.log(value,',jnbjnbj')
+//     const requestOptions = {
+//       method: 'PUT',
+//       headers: {'Content-Type': 'application/json', Authorization: value},
+//       body: JSON.stringify({
+//         name: name,
+//         dateOfBirth: datereversed,
+//         email: email,
+//         business_name: bussinessName,
+//         business_phone: bussinessPhone,
+//         address: bussinessAddress,
+//         instagramId: instaname,
+//         id: idd,
+//         logo: `data:image/png;base64,${image1}`,
+//         cover: `data:image/png;base64,${cover1} `,
+//         multipleImage: grpImages,
+//       }),
+//     }
+    
+//     fetch(REGISTER_URL, requestOptions)
+//      .then(response => response.json())
+//       .then(responseJson => {
+//         console.log(responseJson, ';;;;');
+//       });
   };
-
- 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -220,8 +343,8 @@ const RegistrationScreen = ({navigation}) => {
               onPress={thirdViewHandler}
               style={{
                 height: verticalScale(35),
-                width: scale(30),
-                borderRadius: moderateScale(30 / 2),
+                width: scale(35),
+                borderRadius: moderateScale(35 / 2),
                 backgroundColor: showThirdView === true ? '#C6CEDE' : '#E9EAEE',
 
                 alignItems: 'center',
@@ -244,8 +367,8 @@ const RegistrationScreen = ({navigation}) => {
               onPress={secondViewHandler}
               style={{
                 height: verticalScale(35),
-                width: scale(30),
-                borderRadius: moderateScale(30 / 2),
+                width: scale(35),
+                borderRadius: moderateScale(35/ 2),
                 backgroundColor:
                   showSecondView === true || showThirdView === true
                     ? '#C6CEDE'
@@ -271,8 +394,8 @@ const RegistrationScreen = ({navigation}) => {
               onPress={firstViewHandler}
               style={{
                 height: verticalScale(35),
-                width: scale(30),
-                borderRadius: moderateScale(30 / 2),
+                width: scale(35),
+                borderRadius: moderateScale(35 / 2),
                 backgroundColor: '#C7CEDE',
                 marginLeft: 20,
                 borderWidth: showFirstView === true ? 1 : 0,
@@ -293,7 +416,19 @@ const RegistrationScreen = ({navigation}) => {
           </View>
         ) : null}
         {showFirstView == true && (
-          <View>
+          <KeyboardAwareScrollView
+          keyboardShouldPersistTaps={"handled"}
+          // extraScrollHeight={Platform.OS == "ios" ? "4%" : "0%"}
+           extraHeight={Platform.OS == "ios" ? "9%" : 0}
+           behavior={Platform.OS == "ios" ? "position" : null}
+           resetScrollToCoords={{ x: 0, y: 0 }}
+           scrollEnabled={false}
+           showsVerticalScrollIndicator={false}
+           showsHorizontalScrollIndicator={false}
+           keyboardOpeningTime={1}
+           enableOnAndroid={true}
+           contentContainerStyle={{ flex: 1 }}
+          >
             <View style={styles.heading}>
               <Text style={styles.headingText}>הרשמה ליומן בית העסק</Text>
             </View>
@@ -311,7 +446,7 @@ const RegistrationScreen = ({navigation}) => {
                 color: '#5E6167',
                 marginHorizontal: '5%',
               }}
-              maxLength={10}
+              maxLength={16}
               value={name}
               onChangeText={text => setfullName(text)}
               keyboardType="default"
@@ -376,16 +511,32 @@ const RegistrationScreen = ({navigation}) => {
               value={email}
               onChangeText={text => setemail(text)}
               //keyboardType="number-pad"
-              placeholder="מספר העסק*"
+              placeholder="דואר אלקטרוני*"
               placeholderTextColor={'#5E6167'}
             />
+
+            <View style={styles.cover1} />
+
+          
             <View style={styles.cover1} />
             <Button onPress={isValidData1} text="המשך לפרטי העסק" />
-          </View>
+          </KeyboardAwareScrollView>
         )}
 
         {showSecondView == true && (
-          <View>
+          <KeyboardAwareScrollView
+          keyboardShouldPersistTaps={"handled"}
+         // extraScrollHeight={Platform.OS == "ios" ? "4%" : "0%"}
+          extraHeight={Platform.OS == "ios" ? "9%" : 0}
+          behavior={Platform.OS == "ios" ? "position" : null}
+          resetScrollToCoords={{ x: 0, y: 0 }}
+          scrollEnabled={false}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          keyboardOpeningTime={1}
+          enableOnAndroid={true}
+          contentContainerStyle={{ flex: 1 }}
+          >
             <View style={styles.heading}>
               <Text style={styles.headingText}>רק עוד כמה פרטים…</Text>
             </View>
@@ -424,7 +575,7 @@ const RegistrationScreen = ({navigation}) => {
               value={bussinessPhone}
               onChangeText={text => setBussinessPhone(text)}
               keyboardType="number-pad"
-              placeholder="מספר העסק*"
+              placeholder=" מספר טלפון של העסק"
               placeholderTextColor={'#5E6167'}
             />
             <View style={styles.cover1} />
@@ -474,11 +625,15 @@ const RegistrationScreen = ({navigation}) => {
 
             <View style={styles.cover1} />
             <Button onPress={isValidData2} text="המשך להגדרת העיצוב" />
-          </View>
+          </KeyboardAwareScrollView>
         )}
 
         {showThirdView && (
-          <View>
+          <KeyboardAwareScrollView
+          keyboardShouldPersistTaps={"handled"}
+          // extraScrollHeight={Platform.OS == "ios" ? "4%" : "0%"}
+         
+          >
             <View style={styles.heading}>
               <Text style={styles.headingText}>הגדרות תצוגת העסק</Text>
             </View>
@@ -548,16 +703,21 @@ const RegistrationScreen = ({navigation}) => {
                   </View>
                 </View>
               ) : (
+                <TouchableOpacity
+                onPress={onSelectImage}
+                >
                 <Image
                   style={{height: verticalScale(153), width: scale(275)}}
                   source={{
                     uri: image,
                   }}
                 />
+                </TouchableOpacity>
               )}
             </TouchableOpacity>
             <View style={{height: verticalScale(20)}} />
-            <View
+            <TouchableOpacity
+              onPress={onSelectImage1}
               style={{
                 marginHorizontal: '14%',
                 backgroundColor: 'white',
@@ -566,221 +726,95 @@ const RegistrationScreen = ({navigation}) => {
                 borderWidth: 1,
                 borderColor: '#C7CEDE',
               }}>
-              <View
-                style={{
-                  marginTop: '5%',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontSize: RFValue(16),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    color: '#5E6167',
-                  }}>
-                  תמונת COVER
-                </Text>
-              </View>
-              <View style={{marginTop: '5%', marginHorizontal: '4%'}}>
-                <Text
-                  style={{
-                    color: '#5E6167',
-                    opacity: 0.6,
-                    textAlign: 'center',
-                    fontSize: RFValue(12),
-                  }}>
-                  בחרו תמונה רוחבית שתופיע בכניסה לעסק שלכם באפליקצייה
-                </Text>
-              </View>
-              <View
-                style={{
-                  marginTop: '4%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#C7CEDE',
-                  height: verticalScale(34),
-                  marginHorizontal: '25%',
-                  borderRadius: moderateScale(6),
-                }}>
-                <Text
-                  style={{
-                    fontSize: RFValue(14),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    color: '#20304F',
-                    textAlign: 'center',
-                  }}>
-                  בחירת תמונה
-                </Text>
-              </View>
-            </View>
+              {cover === '' ? (
+                <View>
+                  <View
+                    style={{
+                      marginTop: '5%',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: RFValue(16),
+                        fontFamily: 'IBMPlexSansHebrew-Bold',
+                        color: '#5E6167',
+                      }}>
+                      תמונת COVER
+                    </Text>
+                  </View>
+                  <View style={{marginTop: '5%', marginHorizontal: '4%'}}>
+                    <Text
+                      style={{
+                        color: '#5E6167',
+                        opacity: 0.6,
+                        textAlign: 'center',
+                        fontSize: RFValue(12),
+                      }}>
+                      בחרו תמונה רוחבית שתופיע בכניסה לעסק שלכם באפליקצייה
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      marginTop: '4%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#C7CEDE',
+                      height: verticalScale(34),
+                      marginHorizontal: '25%',
+                      borderRadius: moderateScale(6),
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: RFValue(14),
+                        fontFamily: 'IBMPlexSansHebrew-Bold',
+                        color: '#20304F',
+                        textAlign: 'center',
+                      }}>
+                      בחירת תמונה
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                onPress={onSelectImage1}
+                >
+                <Image
+                  style={{height: verticalScale(153), width: scale(275)}}
+                  source={{
+                    uri: cover,
+                  }}
+                />
+                </TouchableOpacity>
+              )}
+              
+            </TouchableOpacity>
             <View style={{height: verticalScale(20)}} />
-            <View
+            <AddPostView newImages={imageList} addImages={onSelectImage2} />
+            <View style={{height: verticalScale(20)}} />
+
+            <Input
               style={{
-                marginHorizontal: '14%',
-                backgroundColor: 'white',
-                height: verticalScale(150),
-                borderRadius: moderateScale(6),
-                borderWidth: 1,
-                borderColor: '#C7CEDE',
-              }}>
-              <View
-                style={{
-                  marginTop: '5%',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontSize: RFValue(16),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    color: '#5E6167',
-                  }}>
-                  צבע
-                </Text>
-              </View>
-              <View style={{marginTop: '5%', marginHorizontal: '4%'}}>
-                <Text
-                  style={{
-                    color: '#5E6167',
-                    opacity: 0.6,
-                    textAlign: 'center',
-                    fontSize: RFValue(12),
-                  }}>
-                  בחרו את צבע המותג שלכם
-                </Text>
-              </View>
-              <View
-                style={{
-                  marginTop: '6%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#CB7E58',
-                  height: verticalScale(40),
-                  marginHorizontal: '42%',
-                  borderRadius: moderateScale(6),
-                }}></View>
-            </View>
+                textAlign: 'right',
+                fontSize: RFValue(16),
+                fontFamily: 'IBMPlexSansHebrew-Regular',
+                color: '#5E6167',
+                marginHorizontal: '5%',
+                alignItems:'center'
+              }}
+              // maxLength={10}
+              value={instaname}
+              onChangeText={text => setinstaname(text)}
+              //keyboardType="number-pad"
+              placeholder="שם משתמש אינסטגרם באנגלית"
+              placeholderTextColor={'#5E6167'}
+            />
             <View style={styles.cover1} />
 
             <Button onPress={imageUpload} text="סיום ההרשמה" />
-          </View>
+          </KeyboardAwareScrollView>
         )}
-        {showFourthView === true && (
-          <View>
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: '30%',
-                height: verticalScale(128),
-                backgroundColor: '#C7CEDE',
-                width: scale(128),
-                marginLeft: '30%',
-                borderRadius: 128 / 2,
-              }}>
-              <HighFive />
-            </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: '5%',
-              }}>
-              <Text
-                style={{
-                  fontSize: RFValue(24),
-                  fontFamily: 'IBMPlexSansHebrew-Bold',
-                  color: '#20304F',
-                }}>
-                סיימנו!
-              </Text>
-            </View>
-            <View
-              style={{
-                marginHorizontal: '14%',
-                backgroundColor: 'white',
-                height: verticalScale(162),
-                borderRadius: moderateScale(6),
-                borderWidth: 1,
-                borderColor: '#C7CEDE',
-                marginTop: '6%',
-              }}>
-              <View
-                style={{
-                  marginTop: '5%',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontSize: RFValue(16),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    color: '#5E6167',
-                  }}>
-                  מספר העסק שלך
-                </Text>
-              </View>
-              <View style={{marginTop: '5%', marginHorizontal: '4%'}}>
-                <Text
-                  style={{
-                    color: '#20304F',
-                    opacity: 0.6,
-                    textAlign: 'center',
-                    fontSize: RFValue(32),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    opacity: 1,
-                  }}>
-                  161909
-                </Text>
-              </View>
-              <View
-                style={{
-                  marginTop: '4%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#C7CEDE',
-                  height: verticalScale(34),
-                  marginHorizontal: '30%',
-                  borderRadius: moderateScale(6),
-                  flexDirection: 'row',
-                }}>
-                <ShareIcon />
-                <Text
-                  style={{
-                    fontSize: RFValue(14),
-                    fontFamily: 'IBMPlexSansHebrew-Bold',
-                    color: '#20304F',
-                    textAlign: 'center',
-                    marginLeft: '8%',
-                  }}>
-                  שיתוף
-                </Text>
-              </View>
-            </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: '6%',
-                marginHorizontal: '21%',
-              }}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontSize: RFValue(16),
-                  fontFamily: 'IBMPlexSansHebrew-Regular',
-                  color: '#20304F',
-                }}>
-                שמור את מספר העסק שלך, המספר ישמש את לקוחותיך בעת ההרשמה לקביעת
-                תורים אצלך
-              </Text>
-            </View>
-            <View style={{height: verticalScale(100)}} />
-            <Button 
-            
-            />
-          </View>
-        )}
+
         <View style={styles.cover1} />
       </ScrollView>
     </SafeAreaView>
@@ -849,7 +883,7 @@ const styles = StyleSheet.create({
     height: verticalScale(50),
     width: '73%',
     borderWidth: 1,
-    borderColor: colors.THEME,
+    borderColor: '#C7CEDE',
     borderRadius: moderateScale(6),
     backgroundColor: colors.WHITE,
     marginHorizontal: '13.5%',
@@ -879,11 +913,13 @@ const styles = StyleSheet.create({
     color: '#5E6167',
   },
   textInputStyle: {
+    height: verticalScale(52),
+
     color: '#5E6167',
     fontSize: RFValue(16),
     backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: colors.THEME,
+    borderColor: '#C7CEDE',
     fontSize: RFValue(14),
     fontFamily: 'IBMPlexSansHebrew-Regular',
     color: '#5E6167',

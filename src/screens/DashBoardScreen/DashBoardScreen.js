@@ -8,7 +8,9 @@ import {
   ImageBackground,
   Image,
   Button,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert,
+  Dimensions,
 } from 'react-native';
 import HomeHeader from '../../components/Header/HomeHeader';
 import * as Animatable from 'react-native-animatable';
@@ -24,7 +26,17 @@ import CalendarIcon from '../../assets/icons/calendar.svg';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
 import {windowWidth} from '../../utils/measurement';
 import ThreeDots from '../../assets/icons/threedots.svg';
-import Modal from "react-native-modal";
+import Modal from 'react-native-modal';
+import Imag from '../../assets/icons/image.svg';
+import ImagePicker from 'react-native-image-crop-picker';
+import {useSelector} from 'react-redux';
+import {androidCameraPermission} from '../../../permissions';
+import {UPDATE_BUSSINESS_COVER} from '../../config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { showError } from '../../utils/helperFunction';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+androidCameraPermission;
 
 const DATA = [
     {
@@ -82,51 +94,122 @@ const DATA = [
   ];
 
 const DashboardScreen = () => {
-    const [isModalVisible, setModalVisible] = useState(false);
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-      };
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [cover, setcover] = useState('');
+  const [cover1, setcover1] = useState('');
+  const idd = useSelector(state => state.auth.id);
+const logoImage=useSelector(state=>state.authEmployee.bussinessImage)
+const coverImage=useSelector(state=>state.authEmployee.bussinesscover)
+const namee=useSelector(state=>state.authEmployee.name)
+console.log(coverImage,'logoImage')
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+  const onSelectImage = async () => {
+    const permissionStatus = await androidCameraPermission();
+    if (permissionStatus || Platform.OS == 'ios') {
+      Alert.alert('Profile Picture', 'Choose an option', [
+        {text: 'Gallery', onPress: onGallery1},
+        {text: 'Cancel', onPress: () => {}},
+      ]);
+    }
+  };
+  const onGallery1 = () => {
+    ImagePicker.openPicker({
+     disableCropperColorSetters:true,
+      includeBase64: true,
+      avoidEmptySpaceAroundImage:true,
+      mediaType:'photo',
+      compressImageQuality:1	,
+      freeStyleCropEnabled:true,
+      cropping:true,
+      showCropFrame:false
+    }).then(imageee => {
+      setcover(imageee.path);
+      setcover1(imageee.data);
+      imageUpload(cover1,idd)
+
+      // console.log(cover1, '.....');
+    });
+  };
+
+  const imageUpload = async data => {
+    console.log(data, 'dats');
+
+    const value = await AsyncStorage.getItem('@storage_Key');
+    const requestOptions = {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json', Authorization: value},
+      body: JSON.stringify({
+        file:`data:image/png;base64,${cover1}`,
+        id:idd,
+      }),
+    };
+
+    fetch(UPDATE_BUSSINESS_COVER, requestOptions)
+      .then(response => response.json())
+      .then(responseJson => {
+        console.log(responseJson, ';;;;');
+        
+      })
+   .catch(
+   
+  //  showError('Something went wrong!')
+   )
+  };
+
+  
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar
         animated={false}
         barStyle="dark-content"
         backgroundColor="#ffffff"
       />
       <ScrollView>
-      <Modal isVisible={isModalVisible}>
-        <View style={{ flex: 1 }}>
-          <Text>Hello!</Text>
+        <Modal isVisible={isModalVisible}>
+          <View style={{flex: 1}}>
+            <Text>Hello!</Text>
 
-          <Button title="Hide modal" onPress={toggleModal} />
-        </View>
-      </Modal>
+            <Button title="Hide modal" onPress={toggleModal} />
+          </View>
+        </Modal>
         <Animatable.View animation="fadeInDownBig">
+          
           <ImageBackground
-            resizeMode="cover"
+           
+            resizeMode='cover'
             imageStyle={{
               borderBottomLeftRadius: moderateScale(20),
               borderBottomRightRadius: moderateScale(20),
             }}
-            style={{marginTop: '10%'}}
-            source={require('../../assets/icons/homeCardImage.png')}>
+            style={{marginTop: '10%',width:'100%'}}
+            source={
+              cover === ''
+                ? {uri:`http://18.159.82.242/v1/uploads/${coverImage}`}
+                : {uri: cover}
+            }
+            >
+           <View style={{flexDirection:'row',flex:1,justifyContent:'space-between',marginHorizontal:'5%'}}>
             <View
               style={{
-                marginTop: '40%',
+                marginTop: '50%',
                 backgroundColor: 'white',
-                marginLeft: moderateScale(20),
+            
                 height: verticalScale(36),
-                marginRight: '65%',
-                marginLeft: '4%',
+               
                 borderRadius: moderateScale(23),
                 flexDirection: 'row',
                 alignItems: 'center',
                 marginBottom: '5%',
+            
               }}>
+                <View>
+                <View style={{flexDirection:'row'}}>
               <View
                 style={{
-                  height: '90%',
-                  width: '25%',
+                  height: verticalScale(32),
+                  width:scale(32),
                   backgroundColor: colors.THEME,
                   borderRadius: moderateScale(16),
                   marginLeft: '2%',
@@ -135,16 +218,36 @@ const DashboardScreen = () => {
                 }}>
                 <Whiteprofile />
               </View>
+              <View style={{alignItems:'center',justifyContent:'center'}}>
               <Text
                 style={{
                   fontSize: RFValue(14),
                   fontFamily: 'IBMPlexSansHebrew-Regular',
                   color: '#5E6167',
                   marginLeft: '4%',
+                  textAlign:'center'
                 }}>
-                שלום נועה
+              שלום {namee}
               </Text>
-            </View>
+              </View>
+              </View>
+              </View>
+              </View>
+              <TouchableOpacity
+                onPress={onSelectImage}
+                style={{
+                
+                  height: verticalScale(36),
+                  width: scale(36),
+                  borderRadius: moderateScale(36 / 2),
+                  backgroundColor: 'white',
+                  marginTop: '50%',
+                  alignItems:'center',
+                  justifyContent:'center'
+                }}>
+                <Imag />
+              </TouchableOpacity>
+          </View>
           </ImageBackground>
           <View style={styles.nextAppointment}>
             <View>
@@ -183,8 +286,9 @@ const DashboardScreen = () => {
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(40)}}
-              source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
+              style={{height: verticalScale(45), width: scale(45)}}
+            //  source={{uri:`http://18.159.82.242/v1/uploads/${logoImage}`}}
+             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
             />
             <Text
               style={{
@@ -198,9 +302,9 @@ const DashboardScreen = () => {
             <View
               style={{
                 height: verticalScale(28),
-                width: scale(24),
+                width: scale(28),
                 backgroundColor: '#C7CEDE',
-                borderRadius: moderateScale(24 / 2),
+                borderRadius: moderateScale(28 / 2),
                 marginLeft: '2%',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -275,7 +379,7 @@ const DashboardScreen = () => {
                           }}>
                           <Image
                             style={{
-                              width: scale(32),
+                              width: scale(36),
                               height: verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
@@ -298,7 +402,7 @@ const DashboardScreen = () => {
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(40)}}
+              style={{height: verticalScale(45), width: scale(45)}}
               source={require('../../assets/icons/ProfileIcon2/ProfileIcon2.2.png')}
             />
             <Text
@@ -313,9 +417,9 @@ const DashboardScreen = () => {
             <View
               style={{
                 height: verticalScale(28),
-                width: scale(24),
+                width: scale(28),
                 backgroundColor: '#C7CEDE',
-                borderRadius: moderateScale(24 / 2),
+                borderRadius: moderateScale(28 / 2),
                 marginLeft: '2%',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -389,7 +493,7 @@ const DashboardScreen = () => {
                           }}>
                           <Image
                             style={{
-                              width: scale(32),
+                              width: scale(36),
                               height: verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
@@ -412,7 +516,7 @@ const DashboardScreen = () => {
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(40)}}
+              style={{height: verticalScale(45), width: scale(45)}}
               source={require('../../assets/icons/ProfileIcon2/ProfileIcon2.2.png')}
             />
             <Text
@@ -427,9 +531,9 @@ const DashboardScreen = () => {
             <View
               style={{
                 height: verticalScale(28),
-                width: scale(24),
+                width: scale(28),
                 backgroundColor: '#C7CEDE',
-                borderRadius: moderateScale(24 / 2),
+                borderRadius: moderateScale(28 / 2),
                 marginLeft: '2%',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -503,7 +607,7 @@ const DashboardScreen = () => {
                           }}>
                           <Image
                             style={{
-                              width: scale(32),
+                              width: scale(36),
                               height: verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
@@ -533,47 +637,104 @@ const DashboardScreen = () => {
                 alignItems: 'center',
               }}>
               <View>
-                  <View style={{width:'65%'}}>
-                <Text style={{fontSize: RFValue(24), color: 'white',alignItems:'center',   fontFamily: 'IBMPlexSansHebrew-Bold',}}>934</Text>
+                <View style={{width: '65%'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(24),
+                      color: 'white',
+                      alignItems: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Bold',
+                    }}>
+                    934
+                  </Text>
                 </View>
-                <View style={{width:'60%'}}>
-                <Text style={{fontSize:RFValue(16),color:'white',textAlign:'center',   fontFamily: 'IBMPlexSansHebrew-Regular'}}>
-                תורים היום
-                </Text>
+                <View style={{width: '60%'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(16),
+                      color: 'white',
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Regular',
+                    }}>
+                    תורים היום
+                  </Text>
                 </View>
-                
               </View>
-              <View style={{height:verticalScale(73),backgroundColor:'grey',width:1,margin:15}}>
-                  </View>
-                  <View style={{height:verticalScale(73),width:1,margin:10}}>
-                  </View>
-                  <View>
-                  <View style={{width:'65%',alignItems:'center'}}>
-                <Text style={{fontSize: RFValue(24), color: 'white',textAlign:'center',   fontFamily: 'IBMPlexSansHebrew-Bold',}}>934</Text>
+              <View
+                style={{
+                  height: verticalScale(73),
+                  backgroundColor: 'grey',
+                  width: 1,
+                  margin: 15,
+                }}></View>
+              <View
+                style={{
+                  height: verticalScale(73),
+                  width: 1,
+                  margin: 10,
+                }}></View>
+              <View>
+                <View style={{width: '65%', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(24),
+                      color: 'white',
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Bold',
+                    }}>
+                    934
+                  </Text>
                 </View>
-                <View style={{width:'60%',alignItems:'center'}}>
-                <Text style={{fontSize:RFValue(16),color:'white',textAlign:'center',   fontFamily: 'IBMPlexSansHebrew-Regular'}}>
-                תורים היום
-                </Text>
+                <View style={{width: '60%', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(16),
+                      color: 'white',
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Regular',
+                    }}>
+                    תורים היום
+                  </Text>
                 </View>
-                
               </View>
-              <View style={{height:verticalScale(73),backgroundColor:'grey',width:1,margin:15}}>
-                  </View>
-                  <View style={{height:verticalScale(73),width:1,margin:10}}>
-                  </View>
-                  <View>
-                  <View style={{width:'60%',alignItems:'center'}}>
-                <Text style={{fontSize: RFValue(24), color: 'white',textAlign:'center',   fontFamily: 'IBMPlexSansHebrew-Bold',}}>934</Text>
+              <View
+                style={{
+                  height: verticalScale(73),
+                  backgroundColor: 'grey',
+                  width: 1,
+                  margin: 15,
+                }}></View>
+              <View
+                style={{
+                  height: verticalScale(73),
+                  width: 1,
+                  margin: 10,
+                }}></View>
+              <View>
+                <View style={{width: '60%', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(24),
+                      color: 'white',
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Bold',
+                    }}>
+                    934
+                  </Text>
                 </View>
-                <View style={{width:'60%'}}>
-                <Text style={{fontSize:RFValue(16),color:'white',textAlign:'center',   fontFamily: 'IBMPlexSansHebrew-Regular',}}>
-                רשומים לעסק
-                </Text>
-                </View>
-                
+                <TouchableOpacity onPress={imageUpload} style={{width: '60%'}}>
+                  <Text
+                    style={{
+                      fontSize: RFValue(16),
+                      color: 'white',
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansHebrew-Regular',
+                    }}>
+                    רשומים לעסק
+                  </Text>
+                </TouchableOpacity>
               </View>
-             
+
               {/* <View style={{width: '15%',margin:20}}>
                 <Text style={{fontSize: RFValue(24), color: 'white'}}>934</Text>
                 <Text style={{fontSize: RFValue(16), color: 'white'}}>
@@ -592,7 +753,7 @@ const DashboardScreen = () => {
           </View>
         </Animatable.View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

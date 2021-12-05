@@ -12,10 +12,11 @@ import Calendarhiglight from '../assets/icons2/calendarhiglight.svg';
 import Homelight from '../assets/icons2/homehighlight.svg';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {createStackNavigator} from '@react-navigation/stack';
-import {AppointmentScreen, DocumentScreen, EmployeeDetails, ProfileScreen, ShowEmployees, ShowService} from '../screens';
+import {AddEmployee, AddSerivce, AppointmentScreen, DocumentScreen, EmployeeDetails, ProfileScreen, ShowEmployees, ShowService} from '../screens';
 import HomeHeader from '../components/Header/HomeHeader';
 import Xyx from '../assets/icons/Xyx.svg'
 import { DashboardScreen } from '../screens';
+import Header2 from '../components/Header/Header2';
 const BookingStack = createStackNavigator();
 const HomeStack=createStackNavigator()
 const ProfileStack = createStackNavigator();
@@ -34,24 +35,31 @@ const HomeNavigator = () => {
       </HomeStack.Navigator>
     );
   };
-const CalendarNavigator = () => {
+const CalendarNavigator = (props) => {
   return (
     <CalendarStack.Navigator >
       <CalendarStack.Screen
         name="calendar"
         component={ShowEmployees}
        
-        options={{header: () => <HomeHeader
+        options={{header: () => <Header2
             title='הוספת שירות חדש ליומן'
+            onPressback={()=>{
+              props.navigation.goBack()
+            }}
             />, 
         headerTransparent: true}}
-      />
+      />  
+     
        <CalendarStack.Screen
         name="details"
         component={EmployeeDetails}
-       
-        options={{header: () => <HomeHeader
-            //title='הוספת שירות חדש ליומן'
+      
+        options={{header: () => <Header2
+          onPressback={()=>{
+            props.navigation.navigate('calendar')
+          }}
+            title='הוספת שירות חדש ליומן'
             />, 
         headerTransparent: true}}
       />
@@ -59,9 +67,25 @@ const CalendarNavigator = () => {
         name="showService"
         component={ShowService}
        
+        options={{header: () => <Header2
+         onPressback={()=>{
+            props.navigation.navigate('details')
+          }}
+            title='הוספת שירות חדש ליומן'
+            />, 
+        headerTransparent: true}}
+      />
+          <CalendarStack.Screen
+        name="AddService"
+        component={AddSerivce}
+      
         options={{header: () => <HomeHeader
+          onPressback={()=>{
+          props.navigation.navigate('showService')
+        }}
             //title='הוספת שירות חדש ליומן'
             />, 
+            
         headerTransparent: true}}
       />
     </CalendarStack.Navigator>
@@ -87,7 +111,7 @@ const ProfileNavigator = () => {
       <ProfileStack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{header: () => <HomeHeader />, headerTransparent: true}}
+       // options={{header: () => <HomeHeader />, headerTransparent: true}}
       />
     </ProfileStack.Navigator>
   );
