@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   TouchableNativeFeedback,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import {FlatList, ScrollView, TextInput} from 'react-native-gesture-handler';
 import Add from '../../assets/icons/Add.svg';
@@ -30,7 +31,10 @@ import * as authActions from '../../redux/actions/auth';
 import {showError} from '../../utils/helperFunction';
 import {windowWidth} from '../../utils/measurement';
 import {colors} from '../../styles/colors';
-import { KeyboardAwareFlatList,KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {
+  KeyboardAwareFlatList,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-aware-scroll-view';
 import Header2 from '../../components/Header/Header2';
 
 androidCameraPermission;
@@ -130,7 +134,7 @@ const ShowEmployees = ({navigation, route}) => {
       .then(responseJson => {
         setdata(responseJson.data.data);
         //  navigation.navigate('AppTabNavigator')
-        console.log(data, 'lllll');
+        console.log(JSON.stringify(responseJson.data.data.id), 'responseJson');
         //   setRegisterData({bussinessdata:responseJson.data.businessId})
         // console.log(respon,'<<<<=====')
       })
@@ -194,9 +198,8 @@ const ShowEmployees = ({navigation, route}) => {
         backgroundColor="#ffffff"
       />
 
-      
-    <View style={styles.myAppointmentsHeader}>
-        <View style={{marginTop: '5%', alignItems: 'center'}}>
+      <View style={styles.myAppointmentsHeader}>
+        <View style={{marginTop: '10%', alignItems: 'center'}}>
           <Text
             style={{
               fontSize: RFValue(18),
@@ -207,37 +210,25 @@ const ShowEmployees = ({navigation, route}) => {
             ניהול יומנים
           </Text>
         </View>
-      </View> 
+      </View>
 
       <TouchableOpacity
         onPress={showView}
         style={{
-          height: verticalScale(46),
+          height:
+            Platform.OS === 'android' ? verticalScale(52) : verticalScale(46),
           width: scale(46),
           borderRadius: moderateScale(40),
           backgroundColor: 'white',
           alignItems: 'center',
           justifyContent: 'center',
-          position:'absolute',
-          top: 150,
+          position: 'absolute',
+          top: 140,
           zIndex: 9999,
-          right: 50,
-          overflow:'hidden',
-          zIndex:99999
-        }}
-        // style={{
-        //   height: verticalScale(46),
-        //   width: scale(40),
-        //   borderRadius: moderateScale(40),
-        //   backgroundColor: 'white',
-        //   alignItems: 'center',
-        //   justifyContent: 'center',
-        //   position: 'absolute',
-        //   top: 200,
-        //   zIndex: 999,
-        //   right: 50,
-        // }}
-      >
+          right: 40,
+          overflow: 'hidden',
+          zIndex: 99999,
+        }}>
         {view === false ? (
           <Add />
         ) : (
@@ -245,187 +236,192 @@ const ShowEmployees = ({navigation, route}) => {
         )}
       </TouchableOpacity>
       <KeyboardAwareScrollView
-               style={{zIndex:10}}
-      //          keyboardShouldPersistTaps={"handled"}
-      //  //   extraScrollHeight={Platform.OS == "ios" ?"4%": "0%"}
-      //          extraHeight={Platform.OS == "ios" ? "9%" : '0%'}
-      //          style={{ flex: 1, backgroundColor: "white" }}
-      //          behavior={Platform.OS == "ios" ? "position" : null}
-      //          resetScrollToCoords={{ x: 0, y: 0 }}
-      //          scrollEnabled={false}
-      //          showsVerticalScrollIndicator={false}
-      //          showsHorizontalScrollIndicator={false}
-      //          keyboardOpeningTime={1}
-      //          enableOnAndroid={true}
-      //          contentContainerStyle={{ flex: 1 }}
-
-   >
-      
-      <View style={{margin: '5%',flex:1}}>
-       
+        style={{zIndex: 10}}
+        //          keyboardShouldPersistTaps={"handled"}
+        //  //   extraScrollHeight={Platform.OS == "ios" ?"4%": "0%"}
+        //          extraHeight={Platform.OS == "ios" ? "9%" : '0%'}
+        //          style={{ flex: 1, backgroundColor: "white" }}
+        //          behavior={Platform.OS == "ios" ? "position" : null}
+        //          resetScrollToCoords={{ x: 0, y: 0 }}
+        //          scrollEnabled={false}
+        //          showsVerticalScrollIndicator={false}
+        //          showsHorizontalScrollIndicator={false}
+        //          keyboardOpeningTime={1}
+        //          enableOnAndroid={true}
+        //          contentContainerStyle={{ flex: 1 }}
+      >
+        <View style={{margin: '5%', flex: 1}}>
           {loading === true ? (
             <ActivityIndicator size="large" />
           ) : (
             <View>
-           <FlatList
-              data={data}
-              keyExtractor={item => item.id}
-              renderItem={({item, index}) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate('details', {item});
-                    }}
-                    style={{padding: '5%',flex:1}}>
-                    <View
-                      style={{
-                        backgroundColor: 'white',
-                        height: verticalScale(80),
-                        padding: '5%',
-                        borderRadius: moderateScale(20),
-                        alignItems: 'center',
-                        flexDirection: 'row',
-                        flex: 1,
-                      }}>
+              <FlatList
+              
+                data={data}
+                keyExtractor={item => item.id}
+                renderItem={({item, index}) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate('details', {item});
+                      }}
+                      style={{padding: '5%', flex: 1}}>
                       <View
                         style={{
-                          flex: 0.8,
-                          flexDirection: 'row',
+                          backgroundColor: 'white',
+                          height: verticalScale(80),
+                          padding: '5%',
+                          borderRadius: moderateScale(20),
                           alignItems: 'center',
+                          flexDirection: 'row',
+                          flex: 1,
                         }}>
-                        <Image
+                        <View
                           style={{
-                            width: scale(46),
-                            height: verticalScale(46),
-                            borderRadius: moderateScale(46 / 2),
-                          }}
-                          source={
-                            item.profile
-                              ? {
-                                  uri: `http://18.159.82.242/v1/uploads/${item.profile}`,
-                                }
-                              : require('../../assets/icons/profile/profile.png')
-                          }
-
-                          //    source={{uri:`http://18.159.82.242/v1/uploads/${item.profile}`}}
-                          //source={require('1638038266337.png')}
-                          //   source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
-                        />
-
-                        <Text
-                          style={{
-                            marginLeft: '5%',
-                            fontSize: RFValue(18),
-                            fontFamily: 'IBMPlexSansHebrew-Bold',
-                            color: '#5E6167',
+                            flex: 0.8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                           }}>
-                          {item.name}
-                        </Text>
+                          <Image
+                            style={{
+                              width: scale(46),
+                              height:
+                                Platform.OS === 'android'
+                                  ? verticalScale(52)
+                                  : verticalScale(46),
+                              borderRadius: moderateScale(46 / 2),
+                            }}
+                            source={
+                              item.profile
+                                ? {
+                                    uri: `http://18.159.82.242/v1/uploads/${item.profile}`,
+                                  }
+                                : require('../../assets/icons/profile/profile.png')
+                            }
+
+                            //    source={{uri:`http://18.159.82.242/v1/uploads/${item.profile}`}}
+                            //source={require('1638038266337.png')}
+                            //   source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
+                          />
+
+                          <Text
+                            style={{
+                              marginLeft: '5%',
+                              fontSize: RFValue(18),
+                              fontFamily: 'IBMPlexSansHebrew-Bold',
+                              color: '#5E6167',
+                            }}>
+                            {item.name}
+                          </Text>
+                        </View>
+                        <View style={{flex: 0.2, alignItems: 'center'}}>
+                          <Image
+                            style={{marginLeft: '60%'}}
+                            source={require('../../assets/icons/SideAccordian/SideAccordian.png')}
+                          />
+                        </View>
                       </View>
-                      <View style={{flex: 0.2, alignItems: 'center'}}>
-                        <Image
-                          style={{marginLeft: '60%'}}
-                          source={require('../../assets/icons/SideAccordian/SideAccordian.png')}
-                        />
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              }}
-            /> 
+                    </TouchableOpacity>
+                  );
+                }}
+              />
             </View>
-         )} 
+          )}
 
           {view === true && (
-      
             <Animatable.View duration={800} animation="fadeInUpBig">
-           
- 
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  height: verticalScale(120),
+                  padding: '10%',
+                  borderRadius: moderateScale(20),
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  flex: 1,
+                  marginTop: Platform.OS === 'android' ? '10%' : '0%',
+                }}>
                 <View
                   style={{
-                    backgroundColor: 'white',
-                    height: verticalScale(120),
-                    padding: '10%',
-                    borderRadius: moderateScale(20),
-                    alignItems: 'center',
+                    flex: 0.5,
                     flexDirection: 'row',
-                    flex: 1,
+                    alignItems: 'center',
                   }}>
-                  <View
+                  <Image
                     style={{
-                      flex: 0.5,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    }}>
-                    <Image
-                      style={{
-                        width: scale(46),
-                        height: verticalScale(46),
-                      }}
-                      //source={require('1638038266337.png')}
-                      source={require('../../assets/icons/profile/profile.png')}
-                    />
+                      width: verticalScale(52),
+                      height:
+                        Platform.OS === 'android'
+                          ? verticalScale(52)
+                          : scale(52),
+                    }}
+                    //source={require('1638038266337.png')}
+                    source={require('../../assets/icons/profile/profile.png')}
+                  />
 
-                    <View>
-                      <TextInput
-                        value={name}
-                        onChangeText={text => setname(text)}
-                        placeholder="שם העובד/ת"
-                        style={{
-                          height: 40,
-                          borderBottomColor: '#5E6167',
-                          borderBottomWidth: 1,
-                          width: '100%',
-                          marginLeft: '10%',
-                        }}
-                      />
-                      <TextInput
-                        keyboardType="number-pad"
-                        maxLength={10}
-                        value={phone}
-                        onChangeText={text => setphone(text)}
-                        placeholder="מספר טלפון של העובד
+                  <View>
+                    <TextInput
+                      value={name}
+                      onChangeText={text => setname(text)}
+                      placeholder="שם העובד/ת"
+                      style={{
+                        height: 40,
+                        borderBottomColor: '#5E6167',
+                        borderBottomWidth: 1,
+                        width: '100%',
+                        marginLeft: '10%',
+                        textAlign: 'right',
+                        fontSize: RFValue(14),
+                        fontFamily: 'IBMPlexSansHebrew-Regular',
+                        color: '#5E6167',
+                      }}
+                    />
+                    <TextInput
+                      keyboardType="number-pad"
+                      maxLength={10}
+                      value={phone}
+                      onChangeText={text => setphone(text)}
+                      placeholder="מספר טלפון של העובד
                 "
-                        style={{
-                          height: 40,
-                          borderBottomColor: '#5E6167',
-                          borderBottomWidth: 1,
-                          width: '100%',
-                          marginLeft: '10%',
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View
-                    style={{flex: 1, alignItems: 'center', marginLeft: '90%'}}>
-                    <Image
-                      style={{marginLeft: '60%', opacity: 0.3}}
-                      source={require('../../assets/icons/SideAccordian/SideAccordian.png')}
+                      style={{
+                        height: 40,
+                        borderBottomColor: '#5E6167',
+                        borderBottomWidth: 1,
+                        width: '100%',
+                        marginLeft: '10%',
+                        textAlign: 'right',
+                        fontSize: RFValue(14),
+                        fontFamily: 'IBMPlexSansHebrew-Regular',
+                        color: '#5E6167',
+                      }}
                     />
                   </View>
                 </View>
-                <TouchableOpacity
-                  onPress={SaveEmployee}
-                  style={{
-                    height: 30,
-                    backgroundColor: 'lightgreen',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 10,
-                    width: '50%',
-                    marginLeft: '20%',
-                    marginTop: '5%',
-                  }}>
-                  <Text style={{fontWeight: 'bold'}}>שמור עובד</Text>
-                </TouchableOpacity>
-           
-          
+                <View
+                  style={{flex: 1, alignItems: 'center', marginLeft: '90%'}}>
+                  <Image
+                    style={{marginLeft: '60%', opacity: 0.3}}
+                    source={require('../../assets/icons/SideAccordian/SideAccordian.png')}
+                  />
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={SaveEmployee}
+                style={{
+                  height: 30,
+                  backgroundColor: 'lightgreen',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 10,
+                  width: '50%',
+                  marginLeft: '20%',
+                  marginTop: '5%',
+                }}>
+                <Text style={{fontWeight: 'bold'}}>שמור עובד</Text>
+              </TouchableOpacity>
             </Animatable.View>
-          
           )}
-    
-      </View>
-      
+        </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -435,15 +431,15 @@ const ShowEmployees = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
- zIndex: 10
+   
   },
   myAppointmentsHeader: {
-    height: '10%',
+    height:80,
     width: windowWidth,
     backgroundColor: colors.THEME,
-    borderBottomRightRadius: 25,
-    borderBottomLeftRadius: 25,
-    marginTop: '15%',
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    marginTop: '10%',
   },
 });
 

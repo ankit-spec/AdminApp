@@ -12,3 +12,6 @@ export const CREATE_SERVICE=getApiUrl("v1/services/create");
 export const GET_SERVICES=getApiUrl("v1/services/get_services");
 export const UPDATE_SERVICES=getApiUrl('v1/services/update')
 export const UPDATE_EMPLOYEE=getApiUrl('v1/business/update_employee')
+export const CREATE_SCHEDULE=getApiUrl('v1/schedule/create')
+export const BLOCK_DATE=getApiUrl('v1/schedule/blockDates')
+export const UPDATE_BLOCK_DATE=getApiUrl('v1/schedule/updateBlockDate')

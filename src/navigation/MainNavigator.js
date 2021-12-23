@@ -78,27 +78,27 @@ console.log(code,'code')
           <>{RootNavigator(MainStack)}</>:null
         }    */}
  
-        { id=='' || id===undefined? (
+     {/* { id=='' || id===undefined? (
           <>{AuthNavigator(MainStack)}</>
         
         ) : id!=='' ?
           <>{RootNavigator(MainStack)}</>:null
-        }    
-          </MainStack.Navigator>   
+        }     */}
+          {/* </MainStack.Navigator>    */}
           {/* {/* {code.code=='Success'?
           <>{RootNavigator(MainStack)}</>:
             <>{AuthNavigator(MainStack)}</>
           }
           </MainStack.Navigator>  */}
-           {/* <MainStack.Screen
+           <MainStack.Screen
     
     name="PhoneSingin" component={PhoneSigninScreen} /> 
     <MainStack.Screen name="OtpScreen" component={OtpScreen} /> 
    <MainStack.Screen name="Signup" component={RegistrationScreen} />
     <MainStack.Screen name="BussinessId" component={BussinessIdScreen} />   
-    <MainStack.Screen name="AppTabNavigator" component={AppTabNavigator} />
+    <MainStack.Screen name="AppTabNavigator" component={AppTabNavigator} />   
 
-      </MainStack.Navigator>    */}
+      </MainStack.Navigator>    
     </NavigationContainer>
   );
 }

@@ -3,7 +3,7 @@ const initialState = {
   phone: '',
   otp: '',
   id:'',
-
+token:''
 };
 
 export default (state = initialState, action) => {

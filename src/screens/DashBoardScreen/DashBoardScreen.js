@@ -11,11 +11,16 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
+  Platform,
+  LayoutAnimation,
 } from 'react-native';
 import HomeHeader from '../../components/Header/HomeHeader';
 import * as Animatable from 'react-native-animatable';
 import {colors} from '../../styles/colors';
 import {RFValue} from 'react-native-responsive-fontsize';
+import {Calendar, LocaleConfig} from 'react-native-calendars';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 import Whiteprofile from '../../assets/icons/Whiteprofile.svg';
 import {
   moderateScale,
@@ -33,9 +38,10 @@ import {useSelector} from 'react-redux';
 import {androidCameraPermission} from '../../../permissions';
 import {UPDATE_BUSSINESS_COVER} from '../../config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { showError } from '../../utils/helperFunction';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import {showError, showSuccess} from '../../utils/helperFunction';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import moment from 'moment';
 androidCameraPermission;
 
 const DATA = [
@@ -97,11 +103,26 @@ const DashboardScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [cover, setcover] = useState('');
   const [cover1, setcover1] = useState('');
+  const [date, setdate] = useState(moment().format('YYYY-MM-DD'));
+  const [markedDates, setmarkedDates] = useState(null);
+  const [currTime, setcurrTime] = useState();
+  const [comingDate, setcomingDate] = useState(null);
+  const [expand, setexpand] = useState(false);
+  const [selectt, setSelectt] = useState(null);
   const idd = useSelector(state => state.auth.id);
-const logoImage=useSelector(state=>state.authEmployee.bussinessImage)
-const coverImage=useSelector(state=>state.authEmployee.bussinesscover)
-const namee=useSelector(state=>state.authEmployee.name)
-console.log(coverImage,'logoImage')
+  const logoImage = useSelector(state => state.authEmployee.bussinessImage);
+  const coverImage = useSelector(state => state.authEmployee.bussinesscover);
+  console.log(coverImage,'::::')
+  const namee = useSelector(state => state.authEmployee.name);
+  const [select, setSelect] = useState(null);
+
+  const toggleExpand = selectItem => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setexpand(!expand);
+    setSelect(selectItem);
+    //  this.setState({expanded: !this.state.expanded});
+  };
+  console.log(coverImage, 'logoImage');
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -114,21 +135,43 @@ console.log(coverImage,'logoImage')
       ]);
     }
   };
-  const onGallery1 = () => {
+  const onGallery1 = async() => {
+    const value = await AsyncStorage.getItem('@storage_Key');
     ImagePicker.openPicker({
-     disableCropperColorSetters:true,
+      disableCropperColorSetters: true,
       includeBase64: true,
-      avoidEmptySpaceAroundImage:true,
-      mediaType:'photo',
-      compressImageQuality:1	,
-      freeStyleCropEnabled:true,
-      cropping:true,
-      showCropFrame:false
+      avoidEmptySpaceAroundImage: true,
+      mediaType: 'photo',
+      compressImageQuality: 1,
+      freeStyleCropEnabled: true,
+      cropping: true,
+      showCropFrame: false,
     }).then(imageee => {
       setcover(imageee.path);
       setcover1(imageee.data);
-      imageUpload(cover1,idd)
+     
+    
 
+     
+      const requestOptions = {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json', Authorization: value},
+        body: JSON.stringify({
+          file: `data:image/png;base64,${imageee.data}`,
+          id: idd,
+        }),
+      };
+  
+      fetch(UPDATE_BUSSINESS_COVER, requestOptions)
+        .then(response => response.json())
+        .then(responseJson => {
+          console.log(responseJson, ';;;;');
+          showSuccess('Cover updated successfully!')
+        })
+        .catch
+  
+        //  showError('Something went wrong!')
+        ();
       // console.log(cover1, '.....');
     });
   };
@@ -141,8 +184,8 @@ console.log(coverImage,'logoImage')
       method: 'PUT',
       headers: {'Content-Type': 'application/json', Authorization: value},
       body: JSON.stringify({
-        file:`data:image/png;base64,${cover1}`,
-        id:idd,
+        file: `data:image/png;base64,${cover1}`,
+        id: idd,
       }),
     };
 
@@ -150,104 +193,332 @@ console.log(coverImage,'logoImage')
       .then(response => response.json())
       .then(responseJson => {
         console.log(responseJson, ';;;;');
-        
       })
-   .catch(
-   
-  //  showError('Something went wrong!')
-   )
+      .catch
+
+      //  showError('Something went wrong!')
+      ();
   };
 
-  
+  const monthNames = [
+    'ינואר',
+    ' פברואר',
+    'מרץ',
+    'אפריל',
+    'מאי',
+    'יוני',
+    'יולי',
+    'אוגוסט',
+    'ספטמבר',
+    'אוקטובר',
+    'נובמבר',
+    'דצמבר',
+  ];
+
+  const modalEvent = () => {
+    setModalVisible(true);
+  };
+
+  const showModal = () => {
+    return (
+      <Modal
+        backdropColor={'rgba(0,0,0,0.80)'}
+        backdropOpacity={1}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        animationInTiming={300}
+        animationOutTiming={3000}
+        backdropTransitionInTiming={300}
+        backdropTransitionOutTiming={300}
+        isVisible={isModalVisible}
+        onBackButtonPress={() => setModalVisible(true)}
+        onBackdropPress={() => setModalVisible(false)}
+        style={{
+          backgroundColor: 'white',
+          marginTop: '70%',
+          height: verticalScale(30),
+          marginBottom: '100%',
+          marginHorizontal: '5%',
+          borderRadius: moderateScale(20),
+        }}>
+        <View style={{flex: 1, height: verticalScale(30)}}>
+          <Calendar
+            locales={
+              ((LocaleConfig.locales['he'] = {
+                monthNames: [
+                  'ינואר',
+                  ' פברואר',
+                  'מרץ',
+                  'אפריל',
+                  'מאי',
+                  'יוני',
+                  'יולי',
+                  'אוגוסט',
+                  'ספטמבר',
+                  'אוקטובר',
+                  'נובמבר',
+                  'דצמבר',
+                ],
+                monthNamesShort: [
+                  'ינואר',
+                  ' פברואר',
+                  'מרץ',
+                  'אפריל',
+                  'מאי',
+                  'יוני',
+                  'יולי',
+                  'אוגוסט',
+                  'gfghfhh',
+                  'אוקטובר',
+                  'נובמבר',
+                  'דצמבר',
+                ],
+                dayNames: [
+                  'יום רשון',
+                  'יום שיני',
+                  'יום שלישי',
+                  'יום רביעי',
+                  'יוםחמישי',
+                  'יוםששי',
+                  'שבת',
+                ],
+                dayNamesShort: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'],
+              }),
+              (LocaleConfig.defaultLocale = 'he'))
+            }
+            current={date}
+            minDate={new Date()}
+            onDayPress={
+              day => {
+                setmarkedDates(day.dateString);
+                setTimeout(() => {
+                  setModalVisible(false);
+                }, 1000);
+             
+              }
+              // this.setState(
+              //   {
+              //     markedDates: day.dateString,
+              //     modalVisible: false,
+              //     days: this.state.days.concat(day.dateString),
+              //   }, console.log(this.state.days, 'llll'),
+            }
+            markedDates={{
+              [markedDates]: {
+                selected: true,
+                disableTouchEvent: true,
+              },
+            }}
+            renderArrow={direction => {
+              if (direction === 'left') {
+                
+                 <Icon name="chevron-forward-outline" size={25} />;
+                }
+              
+              if (direction === 'right') {
+                return <Icon name="chevron-back-outline" size={25} />;
+              }
+            }}
+            style={[styles.calendar, {height: 300, borderRadius: 20}]}
+            theme={{
+              backgroundColor: '#ffffff',
+              textSectionTitleColor: 'black',
+              selectedDayBackgroundColor: '#C7CEDE',
+              selectedDayTextColor: 'black',
+              dayTextColor: 'red',
+              arrowColor: '#C7CEDE',
+              monthTextColor: '#C7CEDE',
+              //  textDayFontFamily: 'IBMPlexSansHebrew-Regular',
+              //  textDayStyle: {color: '#5E6167', opacity: 1},
+              // textDayFontSize: RFValue(14),
+              textMonthFontFamily: 'IBMPlexSansHebrew-Bold',
+              todayTextColor: '#C7CEDE',
+              todayBackgroundColor: '#F5E5DD',
+              textDayHeaderFontFamily: 'IBMPlexSansHebrew-Bold',
+
+              textMonthFontSize: RFValue(14),
+              dayTextColor: 'black',
+              textSectionTitleDisabledColor: '#d9e1e8',
+              'stylesheet.calendar.main': {
+                dayContainer: {
+                  borderColor: '#D1D3D4',
+                  margin: 0,
+                  padding: 0,
+                  height: 20,
+                },
+              },
+              'stylesheet.day.period': {
+                base: {
+                  overflow: 'hidden',
+                  height: 34,
+                  alignItems: 'center',
+                  width: 38,
+                },
+              },
+
+              emptyDayContainer: {
+                borderColor: '#D1D3D4',
+                borderWidth: 1,
+                flex: 1,
+                padding: 50,
+                height: 50,
+                marginHorizontal: 20,
+                marginTop: 20,
+              },
+              'stylesheet.calendar.header': {
+                week: {
+                  marginTop: 10,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginHorizontal: 20,
+                },
+                month: {
+                  marginTop: 30,
+                },
+              },
+            }}
+            // renderArrow={direction => (direction.left ? <Dropdownss /> : null)}
+            renderHeader={date => {
+              return (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    marginTop: 10,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <View
+                    style={{
+                      marginLeft: 5,
+                      height: 30,
+                      width: '50%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: moderateScale(5),
+                      backgroundColor: '#F5E5DD',
+                    }}>
+                    <Text
+                      style={{
+                        color: '#CB7E58',
+                        fontSize: RFValue(14),
+                        fontFamily: 'IBMPlexSansHebrew-Bold',
+                      }}>
+                      {monthNames[date.getMonth()]}
+                    </Text>
+                  </View>
+                  <View style={{marginLeft: 20}}>
+                    <Text
+                      style={{
+                        color: '#5E6167',
+                        fontSize: RFValue(14),
+                        // fontFamily: 'IBMPlexSansHebrew-Regular',
+                      }}>
+                      {' '}
+                      {date.getFullYear()}
+                    </Text>
+                  </View>
+                </View>
+              );
+            }}
+            disabledDaysIndexes={[6, 5]}
+          />
+        </View>
+      </Modal>
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{flex:2}}>
       <StatusBar
         animated={false}
         barStyle="dark-content"
         backgroundColor="#ffffff"
       />
-      <ScrollView>
-        <Modal isVisible={isModalVisible}>
-          <View style={{flex: 1}}>
-            <Text>Hello!</Text>
-
-            <Button title="Hide modal" onPress={toggleModal} />
-          </View>
-        </Modal>
+      <KeyboardAwareScrollView>
+     
+       
         <Animatable.View animation="fadeInDownBig">
-          
           <ImageBackground
-           
-            resizeMode='cover'
+            resizeMode="cover"
             imageStyle={{
               borderBottomLeftRadius: moderateScale(20),
               borderBottomRightRadius: moderateScale(20),
             }}
-            style={{marginTop: '10%',width:'100%'}}
+            style={{marginTop: '10%', width: '100%'}}
             source={
               cover === ''
-                ? {uri:`http://18.159.82.242/v1/uploads/${coverImage}`}
+                ? {uri: `http://18.159.82.242/v1/uploads/${coverImage}`}
                 : {uri: cover}
-            }
-            >
-           <View style={{flexDirection:'row',flex:1,justifyContent:'space-between',marginHorizontal:'5%'}}>
+            }>
             <View
               style={{
-                marginTop: '50%',
-                backgroundColor: 'white',
-            
-                height: verticalScale(36),
-               
-                borderRadius: moderateScale(23),
                 flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: '5%',
-            
+                flex: 1,
+                justifyContent: 'space-between',
+                marginHorizontal: '5%',
               }}>
-                <View>
-                <View style={{flexDirection:'row'}}>
               <View
                 style={{
-                  height: verticalScale(32),
-                  width:scale(32),
-                  backgroundColor: colors.THEME,
-                  borderRadius: moderateScale(16),
-                  marginLeft: '2%',
-                  justifyContent: 'center',
+                  marginTop: '50%',
+                  backgroundColor: 'white',
+
+                  height: verticalScale(36),
+
+                  borderRadius: moderateScale(23),
+                  flexDirection: 'row',
                   alignItems: 'center',
+                  marginBottom: '5%',
                 }}>
-                <Whiteprofile />
-              </View>
-              <View style={{alignItems:'center',justifyContent:'center'}}>
-              <Text
-                style={{
-                  fontSize: RFValue(14),
-                  fontFamily: 'IBMPlexSansHebrew-Regular',
-                  color: '#5E6167',
-                  marginLeft: '4%',
-                  textAlign:'center'
-                }}>
-              שלום {namee}
-              </Text>
-              </View>
-              </View>
-              </View>
+                <View>
+                  <View style={{flexDirection: 'row'}}>
+                    <View
+                      style={{
+                        height:
+                          Platform.OS === 'android'
+                            ? verticalScale(34)
+                            : verticalScale(30),
+                        width: scale(32),
+                        backgroundColor: colors.THEME,
+                        borderRadius: moderateScale(16),
+                        marginLeft: '2%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Whiteprofile />
+                    </View>
+                    <View
+                      style={{alignItems: 'center', justifyContent: 'center'}}>
+                      <Text
+                        style={{
+                          fontSize: RFValue(14),
+                          fontFamily: 'IBMPlexSansHebrew-Regular',
+                          color: '#5E6167',
+                          marginLeft: '4%',
+                          textAlign: 'center',
+                        }}>
+                        שלום {namee}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
               <TouchableOpacity
                 onPress={onSelectImage}
                 style={{
-                
-                  height: verticalScale(36),
+                  height:
+                    Platform.OS === 'android'
+                      ? verticalScale(42)
+                      : verticalScale(36),
                   width: scale(36),
                   borderRadius: moderateScale(36 / 2),
                   backgroundColor: 'white',
                   marginTop: '50%',
-                  alignItems:'center',
-                  justifyContent:'center'
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
                 <Imag />
               </TouchableOpacity>
-          </View>
+            </View>
           </ImageBackground>
           <View style={styles.nextAppointment}>
             <View>
@@ -273,7 +544,9 @@ console.log(coverImage,'logoImage')
                 }}>
                 היום
               </Text>
-              <TouchableOpacity style={{marginLeft: '11%'}}>
+              <TouchableOpacity
+                onPress={() => modalEvent()}
+                style={{marginLeft: '11%'}}>
                 <CalendarIcon />
               </TouchableOpacity>
             </View>
@@ -286,9 +559,15 @@ console.log(coverImage,'logoImage')
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(45)}}
-            //  source={{uri:`http://18.159.82.242/v1/uploads/${logoImage}`}}
-             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
+              style={{
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(50)
+                    : verticalScale(45),
+                width: scale(45),
+              }}
+              //  source={{uri:`http://18.159.82.242/v1/uploads/${logoImage}`}}
+              source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
             />
             <Text
               style={{
@@ -301,7 +580,10 @@ console.log(coverImage,'logoImage')
             </Text>
             <View
               style={{
-                height: verticalScale(28),
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(32)
+                    : verticalScale(28),
                 width: scale(28),
                 backgroundColor: '#C7CEDE',
                 borderRadius: moderateScale(28 / 2),
@@ -352,13 +634,15 @@ console.log(coverImage,'logoImage')
                           }}>
                           {item.namee}
                         </Text>
-                        <View style={{marginLeft: -50}}>
+                        <TouchableOpacity
+                          onPress={() => toggleExpand(item)}
+                          style={{marginLeft: -50}}>
                           <ThreeDots />
-                        </View>
+                        </TouchableOpacity>
                       </View>
                       <Text
                         style={{
-                          marginRight: '19%',
+                          marginRight: '27%',
                           fontSize: RFValue(14),
                           marginTop: '3%',
                           fontFamily: 'IBMPlexSansHebrew-Regular',
@@ -380,16 +664,93 @@ console.log(coverImage,'logoImage')
                           <Image
                             style={{
                               width: scale(36),
-                              height: verticalScale(36),
+                              height:
+                                Platform.OS === 'android'
+                                  ? verticalScale(42)
+                                  : verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
                           />
-                          <Text style={{marginLeft: '5%'}}>{item.person}</Text>
+                          <Text style={{marginLeft: '5%',fontSize:RFValue(14),  fontFamily: 'IBMPlexSansHebrew-Regular',color:'#5E6167'}}>{item.person}</Text>
                         </View>
                         <View style={{marginLeft: '65%'}}></View>
                       </View>
                     </View>
                   </View>
+                  {expand && item === select && (
+                    <View
+                      style={{
+                        marginLeft: '50%',
+                        position: 'absolute',
+                        width: 100,
+                        borderRadius: moderateScale(6),
+                        borderWidth: 1,
+                        borderColor: '#A3A4A8',
+                        top: 20,
+                        height: verticalScale(60),
+                        flexDirection: 'column',
+                        padding: '2%',
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => {
+                          navigation.navigate('AddService', {
+                            item,
+                            switchh,
+                            importid,
+                            profile,
+                            emplName,
+                          });
+                        }}>
+                        {/* <Icon
+                          style={{marginLeft: '5%'}}
+                          size={15}
+                          color="#5E6167"
+                          name="call-outline"
+                        /> */}
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#5E6167',
+                          }}>
+                          עריכה
+                        </Text>
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: '#A3A4A8',
+                          marginHorizontal: '4%',
+                        }}
+                      />
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => deleteHandler(item._id)}>
+                        <Icon
+                          style={{marginLeft: '5%'}}
+                          size={20}
+                          color="#FC5C65"
+                          name="close-circle-outline"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#FC5C65',
+                          }}>
+                          מחיקת שירות
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               );
             }}
@@ -402,7 +763,13 @@ console.log(coverImage,'logoImage')
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(45)}}
+              style={{
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(50)
+                    : verticalScale(45),
+                width: scale(45),
+              }}
               source={require('../../assets/icons/ProfileIcon2/ProfileIcon2.2.png')}
             />
             <Text
@@ -416,7 +783,10 @@ console.log(coverImage,'logoImage')
             </Text>
             <View
               style={{
-                height: verticalScale(28),
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(32)
+                    : verticalScale(28),
                 width: scale(28),
                 backgroundColor: '#C7CEDE',
                 borderRadius: moderateScale(28 / 2),
@@ -466,13 +836,15 @@ console.log(coverImage,'logoImage')
                           }}>
                           {item.namee}
                         </Text>
-                        <View style={{marginLeft: -50}}>
+                        <TouchableOpacity
+                          onPress={() => toggleExpand(item)}
+                          style={{marginLeft: -50}}>
                           <ThreeDots />
-                        </View>
+                        </TouchableOpacity>
                       </View>
                       <Text
                         style={{
-                          marginRight: '19%',
+                          marginRight: '27%',
                           fontSize: RFValue(14),
                           marginTop: '3%',
                           fontFamily: 'IBMPlexSansHebrew-Regular',
@@ -494,16 +866,93 @@ console.log(coverImage,'logoImage')
                           <Image
                             style={{
                               width: scale(36),
-                              height: verticalScale(36),
+                              height:
+                                Platform.OS === 'android'
+                                  ? verticalScale(42)
+                                  : verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
                           />
-                          <Text style={{marginLeft: '5%'}}>{item.person}</Text>
+                          <Text style={{marginLeft: '5%',fontSize:RFValue(14),  fontFamily: 'IBMPlexSansHebrew-Regular',color:'#5E6167'}}>{item.person}</Text>
                         </View>
                         <View style={{marginLeft: '65%'}}></View>
                       </View>
                     </View>
                   </View>
+                  {expand && item === select && (
+                    <View
+                      style={{
+                        marginLeft: '50%',
+                        position: 'absolute',
+                        width: 100,
+                        borderRadius: moderateScale(6),
+                        borderWidth: 1,
+                        borderColor: '#A3A4A8',
+                        top: 20,
+                        height: verticalScale(60),
+                        flexDirection: 'column',
+                        padding: '2%',
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => {
+                          navigation.navigate('AddService', {
+                            item,
+                            switchh,
+                            importid,
+                            profile,
+                            emplName,
+                          });
+                        }}>
+                        {/* <Icon
+                          style={{marginLeft: '5%'}}
+                          size={15}
+                          color="#5E6167"
+                          name="call-outline"
+                        /> */}
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#5E6167',
+                          }}>
+                          עריכה
+                        </Text>
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: '#A3A4A8',
+                          marginHorizontal: '4%',
+                        }}
+                      />
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => deleteHandler(item._id)}>
+                        <Icon
+                          style={{marginLeft: '5%'}}
+                          size={20}
+                          color="#FC5C65"
+                          name="close-circle-outline"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#FC5C65',
+                          }}>
+                          מחיקת שירות
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               );
             }}
@@ -516,7 +965,13 @@ console.log(coverImage,'logoImage')
               alignItems: 'center',
             }}>
             <Image
-              style={{height: verticalScale(45), width: scale(45)}}
+              style={{
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(50)
+                    : verticalScale(45),
+                width: scale(45),
+              }}
               source={require('../../assets/icons/ProfileIcon2/ProfileIcon2.2.png')}
             />
             <Text
@@ -530,7 +985,10 @@ console.log(coverImage,'logoImage')
             </Text>
             <View
               style={{
-                height: verticalScale(28),
+                height:
+                  Platform.OS === 'android'
+                    ? verticalScale(32)
+                    : verticalScale(28),
                 width: scale(28),
                 backgroundColor: '#C7CEDE',
                 borderRadius: moderateScale(28 / 2),
@@ -580,13 +1038,15 @@ console.log(coverImage,'logoImage')
                           }}>
                           {item.namee}
                         </Text>
-                        <View style={{marginLeft: -50}}>
+                        <TouchableOpacity
+                          onPress={() => toggleExpand(item)}
+                          style={{marginLeft: -50}}>
                           <ThreeDots />
-                        </View>
+                        </TouchableOpacity>
                       </View>
                       <Text
                         style={{
-                          marginRight: '19%',
+                          marginRight: '27%',
                           fontSize: RFValue(14),
                           marginTop: '3%',
                           fontFamily: 'IBMPlexSansHebrew-Regular',
@@ -608,16 +1068,93 @@ console.log(coverImage,'logoImage')
                           <Image
                             style={{
                               width: scale(36),
-                              height: verticalScale(36),
+                              height:
+                                Platform.OS === 'android'
+                                  ? verticalScale(42)
+                                  : verticalScale(36),
                             }}
                             source={require('../../assets/icons/ProfileIcon1/ProfileIcon.png')}
                           />
-                          <Text style={{marginLeft: '5%'}}>{item.person}</Text>
+                          <Text style={{marginLeft: '5%',fontSize:RFValue(14),  fontFamily: 'IBMPlexSansHebrew-Regular',color:'#5E6167'}}>{item.person}</Text>
                         </View>
                         <View style={{marginLeft: '65%'}}></View>
                       </View>
                     </View>
                   </View>
+                  {expand && item === select && (
+                    <View
+                      style={{
+                        marginLeft: '50%',
+                        position: 'absolute',
+                        width: 100,
+                        borderRadius: moderateScale(6),
+                        borderWidth: 1,
+                        borderColor: '#A3A4A8',
+                        top: 20,
+                        height: verticalScale(60),
+                        flexDirection: 'column',
+                        padding: '2%',
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => {
+                          navigation.navigate('AddService', {
+                            item,
+                            switchh,
+                            importid,
+                            profile,
+                            emplName,
+                          });
+                        }}>
+                        {/* <Icon
+                          style={{marginLeft: '5%'}}
+                          size={15}
+                          color="#5E6167"
+                          name="call-outline"
+                        /> */}
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#5E6167',
+                          }}>
+                          עריכה
+                        </Text>
+                      </TouchableOpacity>
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: '#A3A4A8',
+                          marginHorizontal: '4%',
+                        }}
+                      />
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => deleteHandler(item._id)}>
+                        <Icon
+                          style={{marginLeft: '5%'}}
+                          size={20}
+                          color="#FC5C65"
+                          name="close-circle-outline"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansHebrew-Regular',
+                            fontSize: RFValue(14),
+                            color: '#FC5C65',
+                          }}>
+                          מחיקת שירות
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               );
             }}
@@ -722,7 +1259,7 @@ console.log(coverImage,'logoImage')
                     934
                   </Text>
                 </View>
-                <TouchableOpacity onPress={imageUpload} style={{width: '60%'}}>
+                <TouchableOpacity  style={{width: '60%'}}>
                   <Text
                     style={{
                       fontSize: RFValue(16),
@@ -735,24 +1272,13 @@ console.log(coverImage,'logoImage')
                 </TouchableOpacity>
               </View>
 
-              {/* <View style={{width: '15%',margin:20}}>
-                <Text style={{fontSize: RFValue(24), color: 'white'}}>934</Text>
-                <Text style={{fontSize: RFValue(16), color: 'white'}}>
-                  רשומים לעסק
-                </Text>
-              </View> */}
-              {/* <View style={{height:verticalScale(73),backgroundColor:'grey',width:1,margin:15}}>
-                  </View>
-              <View style={{width: '15%',margin:20}}>
-                <Text style={{fontSize: RFValue(24), color: 'white'}}>934</Text>
-                <Text style={{fontSize: RFValue(16), color: 'white'}}>
-                  רשומים לעסק
-                </Text>
-              </View> */}
+           
             </View>
           </View>
+          {isModalVisible && showModal()}
         </Animatable.View>
-      </ScrollView>
+        </KeyboardAwareScrollView>
+   
     </SafeAreaView>
   );
 };
@@ -760,7 +1286,7 @@ console.log(coverImage,'logoImage')
 // define your styles
 const styles = StyleSheet.create({
   nextAppointment: {
-    marginTop: '3%',
+    marginTop: '8%',
     flexDirection: 'row',
     marginHorizontal: '8%',
     justifyContent: 'space-between',
@@ -775,7 +1301,7 @@ const styles = StyleSheet.create({
   },
   containerr: {
     backgroundColor: '#ffffff',
-    height: moderateScale(141),
+    height: moderateScale(151),
     marginHorizontal: moderateScale(30),
     width: (windowWidth * 85) / 100,
     alignSelf: 'center',

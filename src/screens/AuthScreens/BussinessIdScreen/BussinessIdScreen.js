@@ -1,6 +1,6 @@
 //import liraries
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import Backgroundimage1 from '../../../assets/icons/Background1.svg';
 import Backgroundimage2 from '../../../assets/icons/Background2.svg';
 import Button from '../../../components/Button/Button';
@@ -16,7 +16,7 @@ import ShareIcon from '../../../assets/icons/shareicon.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Share from 'react-native-share';
 import {GET_REGISTER_DATA} from '../../../config/config';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 const BussinessIdScreen = ({navigation}) => {
   const [Data, setData] = useState({
     Company: '',
@@ -34,7 +34,7 @@ const BussinessIdScreen = ({navigation}) => {
       .then(response => response.json())
       .then(responseJson => {
         setData({Company: responseJson.data.businessId});
-       
+
         console.log(Data.Company, 'lllll');
         //   setRegisterData({bussinessdata:responseJson.data.businessId})
         // console.log(respon,'<<<<=====')
@@ -42,6 +42,7 @@ const BussinessIdScreen = ({navigation}) => {
       .catch(error => {
         console.log(error);
       });
+    await AsyncStorage.setItem('@bussinessId', Data.Company);
   };
 
   const onShareHandler = () => {
@@ -67,6 +68,7 @@ const BussinessIdScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       <Backgroundimage1 style={styles.image} />
       <Backgroundimage2 style={styles.image1} />
+      <ScrollView>
       <View
         style={{
           alignItems: 'center',
@@ -132,7 +134,7 @@ const BussinessIdScreen = ({navigation}) => {
           </Text>
         </View>
         <TouchableOpacity
-      onPress={onShareHandler}
+          onPress={onShareHandler}
           style={{
             marginTop: '4%',
             alignItems: 'center',
@@ -176,10 +178,12 @@ const BussinessIdScreen = ({navigation}) => {
       </View>
       <View style={{height: verticalScale(100)}} />
       <Button
-      onPress={()=>{
-        navigation.navigate('AppTabNavigator')
-      }}
-      text="סיום ההרשמה" />
+        onPress={() => {
+          navigation.navigate('AppTabNavigator');
+        }}
+        text="סיום ההרשמה"
+      />
+      </ScrollView>
     </SafeAreaView>
   );
 };

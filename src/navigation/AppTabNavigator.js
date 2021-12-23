@@ -1,6 +1,6 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import React from 'react';
-import {View} from 'react-native';
+import {Alert, View} from 'react-native';
 import HomeIcon from '../assets/icons2/home_icon.svg';
 import ProfileActive from '../assets/icons2/ProfileActive.svg'
 import CalendarIcon from '../assets/icons2/calendar_icon.svg';
@@ -12,7 +12,9 @@ import Calendarhiglight from '../assets/icons2/calendarhiglight.svg';
 import Homelight from '../assets/icons2/homehighlight.svg';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {createStackNavigator} from '@react-navigation/stack';
-import {AddEmployee, AddSerivce, AppointmentScreen, DocumentScreen, EmployeeDetails, ProfileScreen, ShowEmployees, ShowService} from '../screens';
+import BussinessBright from '../assets/icons/BussinessBright.svg';
+import BussinessLight from '../assets/icons/BussinessLight.svg';
+import {AddEmployee, AddSerivce, AppointmentScreen, DocumentScreen, EmployeeDetails, ProfileScreen, ShowEmployees, ShowService,DocumentScreen1,DaysScreen, BlockDaysScreen} from '../screens';
 import HomeHeader from '../components/Header/HomeHeader';
 import Xyx from '../assets/icons/Xyx.svg'
 import { DashboardScreen } from '../screens';
@@ -22,6 +24,34 @@ const HomeStack=createStackNavigator()
 const ProfileStack = createStackNavigator();
 const MapStack=createStackNavigator();
 const CalendarStack=createStackNavigator()
+const BussinessStack=createStackNavigator()
+
+const BussinessNavigator=(props)=>{
+  return(
+    <BussinessStack.Navigator>
+      <BussinessStack.Screen
+      name='Document'
+      component={DocumentScreen}
+      options={{header: () => <HomeHeader 
+        title=''
+        onPressback={()=>{
+          props.navigation.goBack()
+        }}
+        />, headerTransparent: true}}
+      />
+         <BussinessStack.Screen
+      name='Document1'
+      component={DocumentScreen1}
+      options={{header: () => <HomeHeader 
+        onPressback={()=>{
+          props.navigation.navigate('Document')
+        }}
+        title='רשימת תורים'
+        />, headerTransparent: true}}
+      />
+    </BussinessStack.Navigator>
+  )
+}
 const HomeNavigator = () => {
     return (
       <HomeStack.Navigator >
@@ -38,7 +68,7 @@ const HomeNavigator = () => {
 const CalendarNavigator = (props) => {
   return (
     <CalendarStack.Navigator >
-      <CalendarStack.Screen
+     <CalendarStack.Screen
         name="calendar"
         component={ShowEmployees}
        
@@ -50,8 +80,7 @@ const CalendarNavigator = (props) => {
             />, 
         headerTransparent: true}}
       />  
-     
-       <CalendarStack.Screen
+         <CalendarStack.Screen
         name="details"
         component={EmployeeDetails}
       
@@ -63,6 +92,33 @@ const CalendarNavigator = (props) => {
             />, 
         headerTransparent: true}}
       />
+      
+             <CalendarStack.Screen
+        name="days"
+        component={DaysScreen}
+      
+        options={{header: () => <Header2
+          onPressback={()=>{
+            props.navigation.navigate('details')
+          }}
+            title='הוספת שירות חדש ליומן'
+            />, 
+        headerTransparent: true}}
+      />
+          <CalendarStack.Screen
+        name="blockday"
+        component={BlockDaysScreen}
+      
+        options={{header: () => <Header2
+          onPressback={()=>{
+            props.navigation.navigate('days')
+          }}
+            title='הוספת שירות חדש ליומן'
+            />, 
+        headerTransparent: true}}
+      />
+    
+    
          <CalendarStack.Screen
         name="showService"
         component={ShowService}
@@ -91,15 +147,20 @@ const CalendarNavigator = (props) => {
     </CalendarStack.Navigator>
   );
 };
-const BookingNavigator = () => {
+const BookingNavigator = (props) => {
   return (
     <BookingStack.Navigator initialRouteName="SelectProfessional">
       <BookingStack.Screen
         name="Appointment"
         component={AppointmentScreen}
+      
         options={{header: () => <HomeHeader
           title='קביעת תור חדש'
+          onPressback={()=>{
+           props.navigation.goBack()
+          }}
           />, headerTransparent: true}}
+          
       />
     </BookingStack.Navigator>
   );
@@ -185,7 +246,7 @@ const AppTabNavigator = () => {
       />
       <Tab.Screen
         name="document"
-        component={MapNavigator}
+        component={BussinessNavigator}
         options={{
           tabBarIcon: ({focused, size}) => {
             let iconColor;
@@ -193,7 +254,7 @@ const AppTabNavigator = () => {
               return (
                 <View>
                   <View style={{alignSelf: 'center'}}>
-                   <Xyx color={'red'}/>
+                   <BussinessBright color={'red'}/>
                   </View>
                 </View>
               );
@@ -201,7 +262,7 @@ const AppTabNavigator = () => {
               return (
                 <View>
                   <View style={{alignSelf: 'center'}}>
-                  <DocumentIcon color={'red'} />
+                  <BussinessLight color={'red'} />
 
                   </View>
                 </View>

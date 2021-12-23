@@ -11,3 +11,6 @@ export {default as AppointmentScreen} from '../screens/AppointmentScreen/Appoint
 export {default as EmployeeDetails} from '../screens/EmployeeDetails/EmployeeDetails';
 export {default as ShowService} from '../screens/ShowServices/Showservice'
 export {default as AddEmployee } from '../screens//AddEmployee/AddEmployee'
+export {default as DocumentScreen1} from '../screens/DocumentScreen1/DocumentScreen1'
+export {default as DaysScreen } from '../screens/DaysScreen/DayScreen';
+export {default as BlockDaysScreen} from '../screens/BlockDaysScreen/BlockDaysScreen'

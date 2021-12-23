@@ -7,6 +7,7 @@ import {
   StatusBar,
   Image,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {RFValue} from 'react-native-responsive-fontsize';
 import Input from '../../components/Input/Input';
@@ -33,6 +34,8 @@ const AddSerivce = ({navigation, route}) => {
   const [serviceName, setserviceName] = useState(
     route.params.item ? route.params.item.name : '',
   );
+  const [imageget,setimsgeget]=useState(null)
+
   const [servicePrice, setservicePrice] = useState(
     route.params.item ? route.params.item.price : '',
   );
@@ -47,6 +50,7 @@ const AddSerivce = ({navigation, route}) => {
   );
 
   useEffect(() => {
+    getImage()
     console.log(servicetTime, 'time');
   });
 
@@ -113,6 +117,12 @@ const AddSerivce = ({navigation, route}) => {
     navigation.navigate('showService');
   };
 
+  const getImage=async()=>{
+    let imageimport = await AsyncStorage.getItem('@image');
+console.log(imageimport,'ooooo')
+setimsgeget(imageimport)
+  }
+
   const handleIncrement = () => {
     setCount(prevCount => prevCount + 1);
   };
@@ -167,9 +177,8 @@ const AddSerivce = ({navigation, route}) => {
         barStyle="dark-content"
         backgroundColor="#ffffff"
       />
-
-      <View style={styles.myAppointmentsHeader}>
-        <View style={{marginTop: '17%', alignItems: 'center'}}>
+   <View style={styles.myAppointmentsHeader}>
+        <View style={{marginTop: '16%', alignItems: 'center'}}>
           <Text
             style={{
               fontSize: RFValue(18),
@@ -184,7 +193,7 @@ const AddSerivce = ({navigation, route}) => {
       <KeyboardAwareScrollView style={{zIndex: 10}}>
         <View
           style={{
-            marginTop: '20%',
+            marginTop:Platform.OS==='android'?'5%': '20%',
             flexDirection: 'row',
             marginHorizontal: '13%',
             alignItems: 'center',
@@ -192,13 +201,13 @@ const AddSerivce = ({navigation, route}) => {
           <Image
             style={{
               width: scale(46),
-              height: verticalScale(46),
+              height:Platform.OS==='android'?verticalScale(52): verticalScale(46),
               borderRadius: moderateScale(46 / 2),
             }}
             source={
-              route.params.profile !== ''
+              imageget !== ''
                 ? {
-                    uri: `http://18.159.82.242/v1/uploads/${route.params.profile}`,
+                    uri: `http://18.159.82.242/v1/uploads/${imageget}`,
                   }
                 : require('../../assets/icons/profile/profile.png')
             }
@@ -337,7 +346,8 @@ const AddSerivce = ({navigation, route}) => {
             onPress={editItem}
             textstyle={{color: '#20304F'}}
             style={{backgroundColor: '#C7CEDE'}}
-            text="Edit"
+            text= 'שמירה'
+           
           />
         ) : (
           <Button
@@ -361,7 +371,7 @@ const styles = StyleSheet.create({
     height: verticalScale(16),
   },
   myAppointmentsHeader: {
-    height: 110,
+    height:Platform.OS==='ios'?105:60,
     width: windowWidth,
     backgroundColor: colors.THEME,
     borderBottomRightRadius: 25,

@@ -4,6 +4,7 @@ import {
   VERIFY_OTP_URL,
   GET_REGISTER_DATA,
   CREATE_EMPLOYEE,
+  UPDATE_EMPLOYEE,
 } from '../../config/config';
 import {clearUserData} from '../../utils/helperFunction';
 import types from '../types';
@@ -14,7 +15,8 @@ export const PHONE_SIGNIN = 'PHONE_SIGNIN';
 export const VERIFY_OTP = 'VERIFY_OTP';
 export const REGISTER = 'REGISTER';
 export const REGISTER_EMPLOYEE = 'REGISTER_EMPLOYEE';
-export const REMOVE_REGISTER='REMOVE_REGISTER'
+export const REMOVE_REGISTER='REMOVE_REGISTER';
+export const UPDATE_IMAGE='UPDATE_IMAGE'
 export const phoneSignin = phone => {
   return async dispatch => {
     const response = await fetch(PHONE_API, {
@@ -169,7 +171,12 @@ export const resgisterEmployee = (
       name:resData.data.name,
       imageCover:resData.data.profile,
       code:resData.message,
-      bussinessname:resData.data.business_name
+      bussinessname:resData.data.business_name,
+      bussissAddress:resData.data.address,
+      insta:resData.data.instagramId,
+      logo:resData.data.business_image,
+      phone:resData.data.business_phone,
+      email:resData.data.email
     });
   };
 };
@@ -204,6 +211,42 @@ export const addEmployees = (name, phone, image1,idd) => {
     // });
   };
 };
+
+
+
+export const updateImage = (name, phone, image1,idd) => {
+  return async dispatch => {
+    const value = await AsyncStorage.getItem('@storage_Key');
+    console.log(value, 'value');
+    const response = await fetch(UPDATE_EMPLOYEE, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: value,
+      },
+      body: JSON.stringify({
+        name: name,
+        phone: phone,
+        file: `data:image/png;base64,${image1}`,
+       createdBy: idd,
+      }),
+    });
+    const resData = await response.json();
+    if (!response.ok) {
+      showError('Something went wrong!');
+    }
+    console.log(resData, 'data<<====');
+    dispatch({
+      type: UPDATE_EMPLOYEE,
+   //   bussinesimage:resData.bussinesimage
+
+    });
+  };
+};
+
+
+
 
 
 export const removeData=(data)=>{
